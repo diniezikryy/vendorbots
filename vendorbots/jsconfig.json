@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
+    "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
+      // add more folders here
     }
-  }
+  },
+  "exclude": ["node_modules", ".next"]
 }
