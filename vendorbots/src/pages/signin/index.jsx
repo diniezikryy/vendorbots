@@ -1,26 +1,25 @@
 import Link from "next/link";
 
-import signIn from "@/pages/signin/signin";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { useAuthContext } from "@/utils/context/AuthContext";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
+  const { logIn } = useAuthContext();
+
   const handleForm = async (event) => {
     event.preventDefault();
 
-    const { result, error } = await signIn(email, password);
-
-    if (error) {
-      return console.log(error);
+    try {
+      await logIn(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      console.log(err);
     }
-
-    // else successful
-    console.log(result);
-    return router.push("/dashboard");
   };
 
   return (

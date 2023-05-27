@@ -1,5 +1,5 @@
 import { useState } from "react";
-import signUp from "@/pages/signup/signup";
+import { useAuthContext } from "@/utils/context/AuthContext";
 import { useRouter } from "next/router";
 
 export default function SignUpPage() {
@@ -7,18 +7,17 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
+  const { signUp } = useAuthContext();
+
   const handleForm = async (event) => {
     event.preventDefault();
 
-    const { result, error } = await signUp(email, password);
-
-    if (error) {
-      return console.log(error);
+    try {
+      await signUp(email, password);
+      router.push("/dashboard");
+    } catch (err) {
+      console.log(err);
     }
-
-    // else successful
-    console.log(result);
-    return router.push("/dashboard");
   };
 
   return (
