@@ -1,5 +1,4 @@
 // Where the current signed in user resides
-
 import { createContext, useContext, useState, useEffect } from "react";
 import {
   onAuthStateChanged,

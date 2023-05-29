@@ -1,10 +1,13 @@
+import firebase_db from "@/utils/firebase/db";
+
 import { useAuthContext } from "@/utils/context/AuthContext";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+import { collection, getDocs } from "firebase/firestore";
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
-  HomeIcon,
   XMarkIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/outline";
@@ -26,6 +29,22 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+const getOrders = async () => {
+  const colRef = collection(firebase_db, "orders");
+
+  const snapshot = await getDocs(colRef);
+
+  const docs = snapshot.docs.map((doc) => {
+    const data = doc.data();
+
+    data.id = doc.id;
+
+    console.log(data);
+
+    return data;
+  });
+};
+
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -35,6 +54,13 @@ export default function Dashboard() {
   useEffect(() => {
     if (user == null) router.push("/signin");
   }, [user]);
+
+  useEffect(() => {
+    getOrders();
+  }, []);
+
+  // Fetching order data using SWR
+  const { data, error, isLoading } = useSWR("");
 
   const handleLogout = async () => {
     try {
