@@ -11,6 +11,8 @@ import {
   XMarkIcon,
   RectangleStackIcon,
 } from "@heroicons/react/24/outline";
+import { ClipLoader } from "react-spinners";
+import { useQuery, useQueryClient } from "react-query";
 
 const navigation = [
   { name: "Orders", href: "#", icon: RectangleStackIcon, current: true },
@@ -39,14 +41,16 @@ const getOrders = async () => {
 
     data.id = doc.id;
 
-    console.log(data);
-
     return data;
   });
+
+  return docs;
 };
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { user, logOut } = useAuthContext();
   const router = useRouter();
@@ -55,12 +59,7 @@ export default function Dashboard() {
     if (user == null) router.push("/signin");
   }, [user]);
 
-  useEffect(() => {
-    getOrders();
-  }, []);
-
-  // Fetching order data using SWR
-  const { data, error, isLoading } = useSWR("");
+  const { isLoading, data } = useQuery("orders", getOrders);
 
   const handleLogout = async () => {
     try {
@@ -70,6 +69,9 @@ export default function Dashboard() {
       console.log(err.message);
     }
   };
+
+  console.log(isLoading);
+  console.log(data);
 
   return (
     <>
@@ -251,94 +253,102 @@ export default function Dashboard() {
           </a>
         </div>
 
+        {/* Main content here  */}
         <main className="py-10 lg:pl-72">
-          <div className="px-4 sm:px-6 lg:px-8">
+          {isLoading ? (
+            <ClipLoader />
+          ) : (
             <div className="px-4 sm:px-6 lg:px-8">
-              <div className="sm:flex sm:items-center">
-                <div className="sm:flex-auto">
-                  <h1 className="text-base font-semibold leading-6 text-gray-900">
-                    Orders
-                  </h1>
-                  <p className="mt-2 text-sm text-gray-700">
-                    A list of all the orders in your shop including their
-                    username, completion, cost
-                  </p>
+              <div className="px-4 sm:px-6 lg:px-8">
+                <div className="sm:flex sm:items-center">
+                  <div className="sm:flex-auto">
+                    <h1 className="text-base font-semibold leading-6 text-gray-900">
+                      Orders
+                    </h1>
+                    <p className="mt-2 text-sm text-gray-700">
+                      A list of all the orders in your shop including their
+                      username, completion, cost
+                    </p>
+                  </div>
+                  <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none"></div>
                 </div>
-                <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none"></div>
-              </div>
-              <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <table className="min-w-full divide-y divide-gray-300">
-                      <thead>
-                        <tr>
-                          <th
-                            scope="col"
-                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
-                          >
-                            Name
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                          >
-                            Title
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                          >
-                            Email
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                          >
-                            Role
-                          </th>
-                          <th
-                            scope="col"
-                            className="relative py-3.5 pl-3 pr-4 sm:pr-0"
-                          >
-                            <span className="sr-only">Edit</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {people.map((person) => (
-                          <tr key={person.email}>
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                              {person.name}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {person.title}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {person.email}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {person.role}
-                            </td>
-                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                              <a
-                                href="#"
-                                className="text-indigo-600 hover:text-indigo-900"
-                              >
-                                Edit
-                                <span className="sr-only">, {person.name}</span>
-                              </a>
-                            </td>
+                <div className="mt-8 flow-root">
+                  <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                      <table className="min-w-full divide-y divide-gray-300">
+                        <thead>
+                          <tr>
+                            <th
+                              scope="col"
+                              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"
+                            >
+                              Order ID
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Username
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Order Cost
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Order Status
+                            </th>
+                            <th
+                              scope="col"
+                              className="relative py-3.5 pl-3 pr-4 sm:pr-0"
+                            >
+                              <span className="sr-only">Edit</span>
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {data.map((order) => (
+                            <tr key={order.id}>
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
+                                {order.id}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm  text-gray-500">
+                                {order.customer.customer_username}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm font-bold text-gray-500">
+                                {order.total_cost}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {order.order_completed ? (
+                                  <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                    Completed
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                                    Incomplete
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </>
   );
+}
+
+{
+  /*  */
 }
