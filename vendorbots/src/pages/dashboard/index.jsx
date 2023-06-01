@@ -2,7 +2,6 @@ import firebase_db from "@/utils/firebase/db";
 
 import { useAuthContext } from "@/utils/context/AuthContext";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
 import { collection, getDocs } from "firebase/firestore";
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
@@ -12,19 +11,11 @@ import {
   RectangleStackIcon,
 } from "@heroicons/react/24/outline";
 import { ClipLoader } from "react-spinners";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
+import moment from "moment";
 
 const navigation = [
   { name: "Orders", href: "#", icon: RectangleStackIcon, current: true },
-];
-
-const people = [
-  {
-    name: "Lindsay Walton",
-    title: "Front-end Developer",
-    email: "lindsay.walton@example.com",
-    role: "Member",
-  },
 ];
 
 function classNames(...classes) {
@@ -61,6 +52,10 @@ export default function Dashboard() {
 
   const { isLoading, data } = useQuery("orders", getOrders);
 
+  useEffect(() => {
+    setOrders(data ?? []);
+  }, [data]);
+
   const handleLogout = async () => {
     try {
       await logOut();
@@ -70,8 +65,7 @@ export default function Dashboard() {
     }
   };
 
-  console.log(isLoading);
-  console.log(data);
+  console.log(orders);
 
   return (
     <>
@@ -294,7 +288,25 @@ export default function Dashboard() {
                               scope="col"
                               className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                             >
-                              Order Cost
+                              Date
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Total Items
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Total
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            >
+                              Payment Status
                             </th>
                             <th
                               scope="col"
@@ -311,7 +323,7 @@ export default function Dashboard() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                          {data.map((order) => (
+                          {orders.map((order) => (
                             <tr key={order.id}>
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                                 {order.id}
@@ -319,19 +331,44 @@ export default function Dashboard() {
                               <td className="whitespace-nowrap px-3 py-4 text-sm  text-gray-500">
                                 {order.customer.customer_username}
                               </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm  text-gray-500">
+                                {order.date.toDate().toLocaleString()}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm  text-gray-500">
+                                {order.order_items.length}
+                              </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm font-bold text-gray-500">
                                 {order.total_cost}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm font-bold text-gray-500">
+                                {order.paid ? (
+                                  <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                    Paid
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                                    Unpaid
+                                  </span>
+                                )}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                 {order.order_completed ? (
                                   <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                    Completed
+                                    Fulfilled
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
-                                    Incomplete
+                                    Unfulfilled
                                   </span>
                                 )}
+                              </td>
+                              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                                <a
+                                  href="#"
+                                  className="text-indigo-600 hover:text-indigo-900"
+                                >
+                                  View
+                                </a>
                               </td>
                             </tr>
                           ))}
