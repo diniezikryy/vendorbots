@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ClipLoader } from "react-spinners";
 import { useQuery } from "react-query";
-import moment from "moment";
+import Link from "next/link";
 
 const navigation = [
   { name: "Orders", href: "#", icon: RectangleStackIcon, current: true },
@@ -41,7 +41,6 @@ const getOrders = async () => {
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
 
   const { user, logOut } = useAuthContext();
   const router = useRouter();
@@ -363,12 +362,15 @@ export default function Dashboard() {
                                 )}
                               </td>
                               <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                                <a
-                                  href="#"
+                                <Link
                                   className="text-indigo-600 hover:text-indigo-900"
+                                  href={{
+                                    pathname: `/dashboard/orders/${order.id}`,
+                                    query: { id: order.id }, // the data
+                                  }}
                                 >
                                   View
-                                </a>
+                                </Link>
                               </td>
                             </tr>
                           ))}
@@ -384,8 +386,4 @@ export default function Dashboard() {
       </div>
     </>
   );
-}
-
-{
-  /*  */
 }
