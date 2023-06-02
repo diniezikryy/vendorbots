@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "@/common/utils/styles/globals.css";
 import { AuthContextProvider } from "@/common/utils/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 
