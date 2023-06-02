@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuthContext } from "@/utils/context/AuthContext";
+import { useAuthContext } from "@/common/utils/context/AuthContext";
 import { useRouter } from "next/router";
 
 export default function SignUpPage() {

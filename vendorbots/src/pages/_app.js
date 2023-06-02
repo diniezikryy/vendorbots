@@ -1,11 +1,13 @@
 import "@/styles/globals.css";
-import { AuthContextProvider } from "@/utils/context/AuthContext";
+import { AuthContextProvider } from "@/common/utils/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }) {
-  return (
+  const getLayout = Component.getLayout || ((page) => page);
+
+  return getLayout(
     <AuthContextProvider>
       <QueryClientProvider client={queryClient}>
         <Component {...pageProps} />

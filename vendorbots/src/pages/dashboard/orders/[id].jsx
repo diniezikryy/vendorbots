@@ -152,7 +152,7 @@ const moods = [
   },
 ];
 
-import firebase_db from "@/utils/firebase/db";
+import firebase_db from "@/common/utils/firebase/db";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { useQuery } from "react-query";
@@ -165,7 +165,7 @@ import {
 
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { useAuthContext } from "@/utils/context/AuthContext";
+import { useAuthContext } from "@/common/utils/context/AuthContext";
 
 const navigation = [
   { name: "Orders", href: "#", icon: RectangleStackIcon, current: true },

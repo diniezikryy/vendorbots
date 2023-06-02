@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useAuthContext } from "@/utils/context/AuthContext";
+import { useAuthContext } from "@/common/utils/context/AuthContext";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
