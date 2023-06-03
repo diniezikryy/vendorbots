@@ -1,7 +1,6 @@
 import OrderTableRow from "./OrderTableRow";
 
 export default function OrderTable({ orders }) {
-  console.log(orders);
   return (
     <div className="">
       <div className="sm:flex sm:items-center">

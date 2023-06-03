@@ -6,43 +6,88 @@ import {
   CreditCardIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import Link from "next/link";
 
 export default function OrderDetailsPage(props) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { id } = router.query;
 
-  const getOrderDetails = async () => {
+  const { isLoading, data } = useQuery(["order_detail", id], async () => {
     const docRef = doc(firebase_db, "orders", id);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log("Order Details: ", docSnap.data());
       return docSnap.data();
     } else {
       console.log("No order data found!");
     }
-  };
+  });
 
-  function getSubtotal(order_items) {
+  const getSubtotal = (order_items) => {
     let subtotal = 0;
     order_items.forEach((order_item) => {
       subtotal += order_item.price * order_item.quantity;
     });
     return subtotal;
-  }
+  };
 
-  function getTotal(subtotal, second_payment = 0) {
-    let total = 0;
+  const getTotal = (subtotal, second_payment = 0) => {
     return subtotal + second_payment;
-  }
+  };
 
-  const { isLoading, data } = useQuery(["order_detail", id], getOrderDetails);
+  const changeFulfilStatus = useMutation({
+    mutationFn: async () => {
+      const docRef = doc(firebase_db, "orders", id);
+      const docSnap = await getDoc(docRef);
+
+      await updateDoc(docRef, {
+        order_completed: !docSnap.data().order_completed,
+      });
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["order_detail", id] });
+      const prevDocSnap = queryClient.getQueryData(["order_detail", id]);
+      queryClient.setQueryData(["order_detail", id], data);
+      return { prevDocSnap, data };
+    },
+    onError: (err, context) => {
+      queryClient.setQueryData(["order_detail", id], context.prevDocSnap);
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["order_detail", id],
+      }),
+  });
+
+  const changePaidStatus = useMutation({
+    mutationFn: async () => {
+      const docRef = doc(firebase_db, "orders", id);
+      const docSnap = await getDoc(docRef);
+
+      await updateDoc(docRef, {
+        paid: !docSnap.data().paid,
+      });
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["order_detail", id] });
+      const prevDocSnap = queryClient.getQueryData(["order_detail", id]);
+      queryClient.setQueryData(["order_detail", id], data);
+      return { prevDocSnap, data };
+    },
+    onError: (err, context) => {
+      queryClient.setQueryData(["order_detail", id], context.prevDocSnap);
+    },
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["order_detail", id],
+      }),
+  });
 
   return (
     <main>
@@ -53,7 +98,7 @@ export default function OrderDetailsPage(props) {
         </div>
       ) : (
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mb-4 ">
+          <div className="mb-4 flex">
             <Link
               href={{
                 pathname: `/dashboard/`,
@@ -69,6 +114,27 @@ export default function OrderDetailsPage(props) {
                 />
               </button>
             </Link>
+            <div className="ml-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  changeFulfilStatus.mutate();
+                }}
+                className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >
+                Mark as fulfilled
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  changePaidStatus.mutate();
+                }}
+                className="ml-4 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >
+                Mark as paid
+              </button>
+            </div>
           </div>
           <div className="mx-auto grid max-w-2xl grid-cols-1 grid-rows-1 items-start gap-x-8 gap-y-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {/* Invoice summary */}
@@ -89,9 +155,16 @@ export default function OrderDetailsPage(props) {
                   </div>
                   <div className="flex-none self-end px-6 pt-4">
                     <dt className="sr-only">Status</dt>
-                    <dd className="rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-600 ring-1 ring-inset ring-green-600/20">
-                      {data.paid ? <span>Paid</span> : <span>Unpaid</span>}
-                    </dd>
+
+                    {data.paid ? (
+                      <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                        Paid
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                        Unpaid
+                      </span>
+                    )}
                   </div>
                   <div className="mt-6 flex w-full flex-none gap-x-4 border-t border-gray-900/5 px-6 pt-6">
                     <dt className="flex-none">
@@ -135,9 +208,22 @@ export default function OrderDetailsPage(props) {
 
             {/* Invoice */}
             <div className="-mx-4 px-4 py-8 shadow-sm ring-1 ring-gray-900/5 sm:mx-0 sm:rounded-lg sm:px-8 sm:pb-14 lg:col-span-2 lg:row-span-2 lg:row-end-2 xl:px-16 xl:pb-20 xl:pt-16">
-              <h2 className="text-base font-semibold leading-6 text-gray-900">
-                Invoice ID: {id}
-              </h2>
+              <div className="flex justify-between">
+                <h2 className="text-base font-semibold leading-6 text-gray-900">
+                  Invoice ID: {id}
+                </h2>
+                <h2 className="">
+                  {data.order_completed ? (
+                    <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                      Fulfilled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
+                      Unfulfilled
+                    </span>
+                  )}
+                </h2>
+              </div>
               <dl className="mt-6 grid grid-cols-1 text-sm leading-6 sm:grid-cols-2">
                 <div className="sm:pr-4">
                   <dt className="inline text-gray-500">Issued on</dt>{" "}

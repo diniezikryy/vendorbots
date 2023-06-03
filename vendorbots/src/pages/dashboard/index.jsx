@@ -27,8 +27,6 @@ const getOrders = async () => {
 export default function DashboardPage(props) {
   const { isLoading, data } = useQuery("orders", getOrders);
 
-  console.log(data);
-
   return (
     <div>
       {isLoading ? (
