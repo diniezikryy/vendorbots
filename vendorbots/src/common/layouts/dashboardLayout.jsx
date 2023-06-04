@@ -1,9 +1,33 @@
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { Bars3Icon, HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  ListBulletIcon,
+  RectangleStackIcon,
+  Squares2X2Icon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const navigation = [
-  { name: "Orders", href: "#", icon: HomeIcon, current: true },
+  {
+    name: "Orders",
+    href: "/dashboard/orders/",
+    icon: ListBulletIcon,
+    current: true,
+  },
+  {
+    name: "Products",
+    href: "/dashboard/products/",
+    icon: Squares2X2Icon,
+    current: false,
+  },
+  {
+    name: "Groupbuys",
+    href: "/dashboard/groupbuys/",
+    icon: RectangleStackIcon,
+    current: false,
+  },
 ];
 
 function classNames(...classes) {
@@ -86,7 +110,7 @@ export default function DashboardLayout({ children }) {
                           <ul role="list" className="-mx-2 space-y-1">
                             {navigation.map((item) => (
                               <li key={item.name}>
-                                <a
+                                <Link
                                   href={item.href}
                                   className={classNames(
                                     item.current
@@ -105,7 +129,7 @@ export default function DashboardLayout({ children }) {
                                     aria-hidden="true"
                                   />
                                   {item.name}
-                                </a>
+                                </Link>
                               </li>
                             ))}
                           </ul>

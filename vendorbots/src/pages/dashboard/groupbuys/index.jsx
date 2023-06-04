@@ -1,13 +1,13 @@
 import DashboardLayout from "@/common/layouts/dashboardLayout";
 
-export default function DashboardPage() {
+export default function GroupbuyPage() {
   return (
     <div>
-      <h1>Hello</h1>
+      <h1>This is the group buy page!</h1>
     </div>
   );
 }
 
-DashboardPage.getLayout = function getLayout(page) {
+GroupbuyPage.getLayout = function getLayout(page) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
