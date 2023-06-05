@@ -1,7 +1,8 @@
 import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
+  ChevronRightIcon,
   ListBulletIcon,
   RectangleStackIcon,
   Squares2X2Icon,
@@ -9,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-const navigation = [
+const navigation1 = [
   {
     name: "Orders",
     href: "/dashboard/orders/",
@@ -30,6 +31,26 @@ const navigation = [
   },
 ];
 
+const navigation = [
+  {
+    name: "Orders",
+    href: "/dashboard/orders/",
+    current: true,
+  },
+  {
+    name: "Products",
+    current: false,
+    children: [
+      { name: "Collections", href: "/dashboard/products/collections/" },
+    ],
+  },
+  {
+    name: "Groupbuys",
+    href: "/dashboard/groupbuys/",
+    current: false,
+  },
+];
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -38,6 +59,8 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Checking if user is authorised to view the app should be here as well
+
+  // Need to handle the current page as well
 
   return (
     <>
@@ -96,7 +119,7 @@ export default function DashboardLayout({ children }) {
                     </div>
                   </Transition.Child>
                   {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2">
+                  <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
                     <div className="flex h-16 shrink-0 items-center">
                       <img
                         className="h-8 w-auto"
@@ -110,29 +133,83 @@ export default function DashboardLayout({ children }) {
                           <ul role="list" className="-mx-2 space-y-1">
                             {navigation.map((item) => (
                               <li key={item.name}>
-                                <Link
-                                  href={item.href}
-                                  className={classNames(
-                                    item.current
-                                      ? "bg-gray-50 text-indigo-600"
-                                      : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
-                                    "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                  )}
-                                >
-                                  <item.icon
+                                {!item.children ? (
+                                  <a
+                                    href={item.href}
                                     className={classNames(
                                       item.current
-                                        ? "text-indigo-600"
-                                        : "text-gray-400 group-hover:text-indigo-600",
-                                      "h-6 w-6 shrink-0"
+                                        ? "bg-gray-50"
+                                        : "hover:bg-gray-50",
+                                      "block rounded-md py-2 pr-2 pl-10 text-sm leading-6 font-semibold text-gray-700"
                                     )}
-                                    aria-hidden="true"
-                                  />
-                                  {item.name}
-                                </Link>
+                                  >
+                                    {item.name}
+                                  </a>
+                                ) : (
+                                  <Disclosure as="div">
+                                    {({ open }) => (
+                                      <>
+                                        <Disclosure.Button
+                                          className={classNames(
+                                            item.current
+                                              ? "bg-gray-50"
+                                              : "hover:bg-gray-50",
+                                            "flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold text-gray-700"
+                                          )}
+                                        >
+                                          <ChevronRightIcon
+                                            className={classNames(
+                                              open
+                                                ? "rotate-90 text-gray-500"
+                                                : "text-gray-400",
+                                              "h-5 w-5 shrink-0"
+                                            )}
+                                            aria-hidden="true"
+                                          />
+                                          {item.name}
+                                        </Disclosure.Button>
+                                        <Disclosure.Panel
+                                          as="ul"
+                                          className="mt-1 px-2"
+                                        >
+                                          {item.children.map((subItem) => (
+                                            <li key={subItem.name}>
+                                              <Disclosure.Button
+                                                as="a"
+                                                href={subItem.href}
+                                                className={classNames(
+                                                  subItem.current
+                                                    ? "bg-gray-50"
+                                                    : "hover:bg-gray-50",
+                                                  "block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-700"
+                                                )}
+                                              >
+                                                {subItem.name}
+                                              </Disclosure.Button>
+                                            </li>
+                                          ))}
+                                        </Disclosure.Panel>
+                                      </>
+                                    )}
+                                  </Disclosure>
+                                )}
                               </li>
                             ))}
                           </ul>
+                        </li>
+                        <li className="-mx-6 mt-auto">
+                          <a
+                            href="#"
+                            className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                          >
+                            <img
+                              className="h-8 w-8 rounded-full bg-gray-50"
+                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              alt=""
+                            />
+                            <span className="sr-only">Your profile</span>
+                            <span aria-hidden="true">Tom Cook</span>
+                          </a>
                         </li>
                       </ul>
                     </nav>
@@ -160,29 +237,78 @@ export default function DashboardLayout({ children }) {
                   <ul role="list" className="-mx-2 space-y-1">
                     {navigation.map((item) => (
                       <li key={item.name}>
-                        <a
-                          href={item.href}
-                          className={classNames(
-                            item.current
-                              ? "bg-gray-50 text-indigo-600"
-                              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50",
-                            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                          )}
-                        >
-                          <item.icon
+                        {!item.children ? (
+                          <a
+                            href={item.href}
                             className={classNames(
-                              item.current
-                                ? "text-indigo-600"
-                                : "text-gray-400 group-hover:text-indigo-600",
-                              "h-6 w-6 shrink-0"
+                              item.current ? "bg-gray-50" : "hover:bg-gray-50",
+                              "block rounded-md py-2 pr-2 pl-10 text-sm leading-6 font-semibold text-gray-700"
                             )}
-                            aria-hidden="true"
-                          />
-                          {item.name}
-                        </a>
+                          >
+                            {item.name}
+                          </a>
+                        ) : (
+                          <Disclosure as="div">
+                            {({ open }) => (
+                              <>
+                                <Disclosure.Button
+                                  className={classNames(
+                                    item.current
+                                      ? "bg-gray-50"
+                                      : "hover:bg-gray-50",
+                                    "flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold text-gray-700"
+                                  )}
+                                >
+                                  <ChevronRightIcon
+                                    className={classNames(
+                                      open
+                                        ? "rotate-90 text-gray-500"
+                                        : "text-gray-400",
+                                      "h-5 w-5 shrink-0"
+                                    )}
+                                    aria-hidden="true"
+                                  />
+                                  {item.name}
+                                </Disclosure.Button>
+                                <Disclosure.Panel as="ul" className="mt-1 px-2">
+                                  {item.children.map((subItem) => (
+                                    <li key={subItem.name}>
+                                      <Disclosure.Button
+                                        as="a"
+                                        href={subItem.href}
+                                        className={classNames(
+                                          subItem.current
+                                            ? "bg-gray-50"
+                                            : "hover:bg-gray-50",
+                                          "block rounded-md py-2 pr-2 pl-9 text-sm leading-6 text-gray-700"
+                                        )}
+                                      >
+                                        {subItem.name}
+                                      </Disclosure.Button>
+                                    </li>
+                                  ))}
+                                </Disclosure.Panel>
+                              </>
+                            )}
+                          </Disclosure>
+                        )}
                       </li>
                     ))}
                   </ul>
+                </li>
+                <li className="-mx-6 mt-auto">
+                  <a
+                    href="#"
+                    className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                  >
+                    <img
+                      className="h-8 w-8 rounded-full bg-gray-50"
+                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      alt=""
+                    />
+                    <span className="sr-only">Your profile</span>
+                    <span aria-hidden="true">Tom Cook</span>
+                  </a>
                 </li>
               </ul>
             </nav>
