@@ -6,7 +6,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { useQuery } from "react-query";
 
 export default function ProductPage() {
-  return <div>fuck this</div>;
+  return <div>product_page</div>;
 }
 
 ProductPage.getLayout = function getLayout(page) {
